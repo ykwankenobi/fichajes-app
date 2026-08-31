@@ -86,9 +86,20 @@
 
             <section class="flex items-start justify-center py-4 sm:flex-1 sm:items-center sm:py-6">
                 <div class="w-full rounded-lg border border-gray-200 bg-white p-4 shadow-sm ring-1 ring-gray-950/5 sm:p-6">
-                    <p class="mb-5 text-center text-3xl font-semibold tracking-wide text-gray-950 sm:text-4xl">
-                        {{ now()->format('H:i') }}
-                    </p>
+                    <div class="mb-6 flex items-center justify-center gap-4 rounded-xl border border-gray-200 bg-gray-50 px-5 py-4 text-center shadow-inner">
+                        <div class="flex h-12 w-12 shrink-0 items-center justify-center rounded-full text-white shadow-sm" style="background: var(--brand-600);">
+                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" class="h-6 w-6" aria-hidden="true">
+                                <circle cx="12" cy="12" r="9" />
+                                <path stroke-linecap="round" d="M12 7v5l3 2" />
+                            </svg>
+                        </div>
+                        <div class="text-left">
+                            <p class="text-xs font-semibold uppercase tracking-widest text-gray-500">Hora actual</p>
+                            <time id="kiosk-clock" class="font-mono text-3xl font-bold tabular-nums tracking-wider text-gray-950 sm:text-4xl" datetime="{{ now()->toIso8601String() }}">
+                                {{ now()->format('H:i:s') }}
+                            </time>
+                        </div>
+                    </div>
 
                     @if (! $selectedUser)
                         <form method="POST" action="{{ route('kiosk.verify') }}" class="mx-auto max-w-xl space-y-5">
@@ -259,5 +270,24 @@
                 </div>
             </section>
         </main>
+        <script>
+            (() => {
+                const clock = document.getElementById('kiosk-clock');
+                if (!clock) return;
+
+                const updateClock = () => {
+                    const now = new Date();
+                    clock.textContent = now.toLocaleTimeString('es-ES', {
+                        hour: '2-digit',
+                        minute: '2-digit',
+                        second: '2-digit',
+                        hour12: false,
+                    });
+                };
+
+                updateClock();
+                window.setInterval(updateClock, 1000);
+            })();
+        </script>
     </body>
 </html>
