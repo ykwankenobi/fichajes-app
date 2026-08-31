@@ -5,7 +5,6 @@ namespace App\Filament\Pages;
 use App\Models\CompanySetting;
 use BackedEnum;
 use Filament\Forms\Components\TextInput;
-use Filament\Forms\Components\CheckboxList;
 use Filament\Notifications\Notification;
 use Filament\Pages\Dashboard;
 use Filament\Pages\Page;
@@ -104,25 +103,6 @@ class CompanySettings extends Page implements HasForms
                             ->maxLength(5),
                     ])
                     ->columns(2),
-
-                Section::make('Festivos')
-                    ->description('Indica qué días de la semana se consideran laborables. Los festivos importados se excluyen aparte.')
-                    ->schema([
-                        CheckboxList::make('working_days')
-                            ->label('Días laborables')
-                            ->options([
-                                'monday' => 'Lunes',
-                                'tuesday' => 'Martes',
-                                'wednesday' => 'Miércoles',
-                                'thursday' => 'Jueves',
-                                'friday' => 'Viernes',
-                                'saturday' => 'Sábado',
-                                'sunday' => 'Domingo',
-                            ])
-                            ->columns(4)
-                            ->default(['monday', 'tuesday', 'wednesday', 'thursday', 'friday'])
-                            ->required(),
-                    ]),
 
                 Section::make('Correo electrónico')
                     ->description('Configura la identidad visible de los correos. Las credenciales SMTP permanecen en la configuración técnica del servidor.')

@@ -13,6 +13,7 @@ use Filament\Resources\Resource;
 use Filament\Schemas\Schema;
 use Filament\Support\Icons\Heroicon;
 use Filament\Tables\Table;
+use UnitEnum;
 
 class HolidayResource extends Resource
 {
@@ -23,6 +24,7 @@ class HolidayResource extends Resource
     protected static ?string $modelLabel = 'festivo';
     protected static ?string $pluralModelLabel = 'festivos';
     protected static ?string $navigationLabel = 'Calendario laboral';
+    protected static UnitEnum|string|null $navigationGroup = 'Calendario laboral';
     protected static ?int $navigationSort = 25;
 
     public static function form(Schema $schema): Schema
