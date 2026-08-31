@@ -230,10 +230,6 @@
         <h2>Detalle diario</h2>
 
         @foreach ($dailyReport->groupBy('usuario') as $employeeName => $employeeDays)
-            <h3 style="font-size: 12px; margin: 12px 0 4px; color: #111827;">
-                {{ $employeeName }}
-            </h3>
-
             <table>
                 <thead>
                     <tr>
