@@ -19,7 +19,7 @@ class FestivusImport extends Page implements HasForms
     use InteractsWithForms;
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedArrowDownTray;
-    protected static ?string $navigationLabel = 'Importar festivos';
+    protected static bool $shouldRegisterNavigation = false;
     protected static ?string $title = 'Importar festivos desde Festivus';
     protected static ?int $navigationSort = 26;
     protected string $view = 'filament.pages.festivus-import';
