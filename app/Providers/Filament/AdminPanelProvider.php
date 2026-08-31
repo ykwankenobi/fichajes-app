@@ -43,7 +43,6 @@ class AdminPanelProvider extends PanelProvider
             ->login()
             ->passwordReset()
             ->maxContentWidth(Width::Full)
-            ->viteTheme('resources/css/filament/admin/theme.css')
             ->plugin(FilamentFullCalendarPlugin::make()
                 ->locale('es')
                 ->timezone(config('app.timezone')))
