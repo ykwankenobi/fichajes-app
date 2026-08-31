@@ -25,6 +25,7 @@ class CompanySetting extends Model
         'absence_approved_subject',
         'absence_rejected_subject',
         'work_time_incident_subject',
+        'holiday_municipality_ine',
     ];
 
     public static function current(): self

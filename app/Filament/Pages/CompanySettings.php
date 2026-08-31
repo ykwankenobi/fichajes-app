@@ -94,6 +94,13 @@ class CompanySettings extends Page implements HasForms
                             ->label('Teléfono')
                             ->tel()
                             ->maxLength(255),
+
+                        TextInput::make('holiday_municipality_ine')
+                            ->label('Código INE del municipio')
+                            ->helperText('Se usa para importar el calendario laboral local.')
+                            ->length(5)
+                            ->numeric()
+                            ->maxLength(5),
                     ])
                     ->columns(2),
 
