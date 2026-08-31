@@ -7,6 +7,8 @@ use Filament\Forms\Components\DatePicker;
 use Filament\Forms\Components\Checkbox;
 use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
+use Filament\Forms\Components\TimePicker;
+use Filament\Forms\Components\Repeater;
 use Filament\Schemas\Components\Grid;
 use Filament\Schemas\Components\Section;
 use Filament\Schemas\Schema;
@@ -77,13 +79,22 @@ class UserForm
                     ])
                     ->columns(3),
 
-                Section::make('Horario y observaciones')
+                Section::make('Horario')
                     ->schema([
-                        Textarea::make('horario')
-                            ->label('Horario')
-                            ->rows(4)
+                        Repeater::make('horario_franjas')
+                            ->label('Franjas horarias')
+                            ->schema([
+                                TimePicker::make('desde')->label('Desde')->seconds(false)->required(),
+                                TimePicker::make('hasta')->label('Hasta')->seconds(false)->required(),
+                            ])
+                            ->columns(2)
+                            ->addActionLabel('Añadir franja')
+                            ->defaultItems(1)
                             ->columnSpanFull(),
+                    ]),
 
+                Section::make('Observaciones')
+                    ->schema([
                         Textarea::make('observaciones')
                             ->label('Observaciones')
                             ->rows(3)

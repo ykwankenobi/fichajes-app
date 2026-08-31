@@ -32,6 +32,7 @@ class User extends Authenticatable implements FilamentUser
         'horas_semanales',
         'puesto',
         'horario',
+        'horario_franjas',
         'observaciones',
         'fecha_alta',
         'fecha_baja',
@@ -52,6 +53,7 @@ class User extends Authenticatable implements FilamentUser
             'is_admin' => 'boolean',
             'fecha_alta' => 'date',
             'fecha_baja' => 'date',
+            'horario_franjas' => 'array',
         ];
     }
 
