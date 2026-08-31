@@ -11,6 +11,8 @@ use Saade\FilamentFullCalendar\Widgets\FullCalendarWidget;
 
 class AttendanceCalendar extends FullCalendarWidget
 {
+    protected static ?int $sort = -10;
+
     protected ?string $heading = 'Calendario de actividad';
 
     protected function headerActions(): array

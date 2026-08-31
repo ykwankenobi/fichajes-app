@@ -13,6 +13,8 @@ use Filament\Widgets\StatsOverviewWidget\Stat;
 
 class AdminStatsOverview extends StatsOverviewWidget
 {
+    protected static ?int $sort = 0;
+
     protected ?string $heading = 'Resumen del sistema';
 
     protected int | array | null $columns = [
