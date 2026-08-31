@@ -92,7 +92,14 @@ class User extends Authenticatable implements FilamentUser
 			->whereYear('starts_at', $year)
 			->get()
 			->sum(function ($absence) {
-				return $absence->starts_at->diffInDays($absence->ends_at) + 1;
+				$days = 0;
+				for ($date = $absence->starts_at->copy(); $date->lte($absence->ends_at); $date->addDay()) {
+					if (! Holiday::isHoliday($date)) {
+						$days++;
+					}
+				}
+
+				return $days;
 			});
 	}
 
