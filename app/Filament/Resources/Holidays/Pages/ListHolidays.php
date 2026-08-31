@@ -16,7 +16,7 @@ class ListHolidays extends ListRecords
     {
         return [
             Action::make('import')
-                ->label('Importar desde Festivus')
+                ->label('Importar calendario laboral')
                 ->icon('heroicon-o-arrow-down-tray')
                 ->url(FestivusImport::getUrl()),
             CreateAction::make()->label('Nuevo festivo'),
