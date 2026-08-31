@@ -103,6 +103,17 @@
 						</div>
 					@endif
 
+					<label class="w-full sm:w-auto flex items-center gap-2 h-[42px] text-sm">
+						<input
+							type="checkbox"
+							name="include_daily"
+							value="1"
+							@checked(request()->boolean('include_daily'))
+							class="rounded border-gray-300"
+						>
+						<span>Incluir detalle diario en el PDF</span>
+					</label>
+
 					<div class="w-full sm:w-auto flex items-center gap-2">
 						{{--
 						<x-ui.link href="{{ route('reports.weekly.export', request()->query()) }}">
