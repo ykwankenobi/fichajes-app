@@ -72,15 +72,6 @@
                 </div>
             </header>
 
-            <div class="border-b border-gray-200 py-3 font-semibold uppercase">
-                <h1 class="text-sm leading-5 tracking-wide text-gray-950 sm:text-base">
-                    Fichajes
-                </h1>
-                <p class="mt-0.5 text-xs leading-5 tracking-wide text-gray-500 sm:text-sm">
-                    {{ now()->format('d/m/Y H:i') }}
-                </p>
-            </div>
-
             @if (session('success'))
                 <div class="mt-4 rounded-lg border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm font-medium text-emerald-900">
                     {{ session('success') }}
@@ -95,6 +86,10 @@
 
             <section class="flex items-start justify-center py-4 sm:flex-1 sm:items-center sm:py-6">
                 <div class="w-full rounded-lg border border-gray-200 bg-white p-4 shadow-sm ring-1 ring-gray-950/5 sm:p-6">
+                    <p class="mb-5 text-center text-3xl font-semibold tracking-wide text-gray-950 sm:text-4xl">
+                        {{ now()->format('H:i') }}
+                    </p>
+
                     @if (! $selectedUser)
                         <form method="POST" action="{{ route('kiosk.verify') }}" class="mx-auto max-w-xl space-y-5">
                             @csrf
