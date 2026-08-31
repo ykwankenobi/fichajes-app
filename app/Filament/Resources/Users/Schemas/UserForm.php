@@ -9,6 +9,7 @@ use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\TimePicker;
 use Filament\Forms\Components\Repeater;
+use Filament\Forms\Components\CheckboxList;
 use Filament\Schemas\Components\Grid;
 use Filament\Schemas\Components\Section;
 use Filament\Schemas\Schema;
@@ -57,12 +58,6 @@ class UserForm
 
                 Section::make('Datos laborales')
                     ->schema([
-                        TextInput::make('horas_semanales')
-                            ->label('Horas semanales')
-                            ->numeric()
-                            ->minValue(0)
-                            ->maxValue(80),
-
                         TextInput::make('puesto')
                             ->label('Puesto')
                             ->maxLength(255),
@@ -81,6 +76,23 @@ class UserForm
 
                 Section::make('Horario')
                     ->schema([
+                        TextInput::make('horas_semanales')
+                            ->label('Horas semanales')
+                            ->numeric()
+                            ->minValue(0)
+                            ->maxValue(80),
+
+                        CheckboxList::make('working_days')
+                            ->label('Días laborables')
+                            ->options([
+                                'monday' => 'Lunes', 'tuesday' => 'Martes', 'wednesday' => 'Miércoles',
+                                'thursday' => 'Jueves', 'friday' => 'Viernes', 'saturday' => 'Sábado', 'sunday' => 'Domingo',
+                            ])
+                            ->columns(4)
+                            ->default(['monday', 'tuesday', 'wednesday', 'thursday', 'friday'])
+                            ->required()
+                            ->columnSpanFull(),
+
                         Repeater::make('horario_franjas')
                             ->label('Franjas horarias')
                             ->schema([
@@ -91,7 +103,7 @@ class UserForm
                             ->addActionLabel('Añadir franja')
                             ->defaultItems(1)
                             ->columnSpanFull(),
-                    ]),
+                    ])->columns(2),
 
                 Section::make('Observaciones')
                     ->schema([
