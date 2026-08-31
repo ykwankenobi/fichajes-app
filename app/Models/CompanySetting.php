@@ -26,6 +26,11 @@ class CompanySetting extends Model
         'absence_rejected_subject',
         'work_time_incident_subject',
         'holiday_municipality_ine',
+        'working_days',
+    ];
+
+    protected $casts = [
+        'working_days' => 'array',
     ];
 
     public static function current(): self
