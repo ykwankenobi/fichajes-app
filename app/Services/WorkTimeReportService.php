@@ -4,6 +4,7 @@ namespace App\Services;
 
 use App\Models\WorkTimeRecord;
 use App\Models\WorkTimeRecordCorrection;
+use App\Models\Holiday;
 use Carbon\Carbon;
 use Illuminate\Support\Collection;
 
@@ -193,7 +194,7 @@ class WorkTimeReportService
 
         return $records
             ->groupBy('user_id')
-            ->map(function (Collection $userRecords) use ($periodType, $startDate): array {
+            ->map(function (Collection $userRecords) use ($periodType, $startDate, $endDate): array {
                 $user = $userRecords->first()['user'];
 
                 $workedMinutes = $userRecords->sum('worked_minutes');
@@ -201,15 +202,7 @@ class WorkTimeReportService
                 $unjustifiedMinutes = $userRecords->sum('unjustified_exit_minutes');
                 $computableMinutes = $workedMinutes + $justifiedMinutes;
 
-                $expectedMinutes = ($user->horas_semanales ?? 0) * 60;
-
-                if ($periodType === 'day') {
-                    $expectedMinutes = (int) round($expectedMinutes / 5);
-                }
-
-                if ($periodType === 'month') {
-                    $expectedMinutes *= $startDate->weeksInMonth;
-                }
+                $expectedMinutes = $this->expectedMinutes($user, $startDate, $endDate);
 
                 $differenceMinutes = $computableMinutes - $expectedMinutes;
 
@@ -225,6 +218,27 @@ class WorkTimeReportService
             })
             ->sortBy('usuario')
             ->values();
+    }
+
+    protected function expectedMinutes($user, Carbon $startDate, Carbon $endDate): int
+    {
+        $workingDays = collect($user->working_days ?: ['monday', 'tuesday', 'wednesday', 'thursday', 'friday']);
+        $weeklyMinutes = (int) round(($user->horas_semanales ?? 0) * 60);
+        $configuredDays = max(1, $workingDays->count());
+        $dailyMinutes = $weeklyMinutes / $configuredDays;
+        $expectedDays = 0;
+
+        for ($date = $startDate->copy()->startOfDay(); $date->lte($endDate); $date->addDay()) {
+            if (! $workingDays->contains(strtolower($date->format('l')))) {
+                continue;
+            }
+            if (Holiday::whereDate('date', $date)->exists()) {
+                continue;
+            }
+            $expectedDays++;
+        }
+
+        return (int) round($expectedDays * $dailyMinutes);
     }
 
     protected function getDailySummaryForPeriod(
