@@ -46,6 +46,7 @@ class DailyReportTable extends TableWidget
 
                 TextColumn::make('entrada')->label('Entrada'),
                 TextColumn::make('salida')->label('Salida'),
+                TextColumn::make('tipo')->label('Tipo')->default('Fichaje'),
 
                 TextColumn::make('computables')
                     ->label('Computadas'),

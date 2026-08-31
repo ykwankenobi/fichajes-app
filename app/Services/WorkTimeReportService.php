@@ -262,7 +262,7 @@ class WorkTimeReportService
     ): Collection {
         $records = $this->getRecordsForPeriod($userId, $isAdmin, $startDate, $endDate, $selectedUserId);
 
-        return $records
+        $rows = $records
             ->groupBy(fn (array $record): string => $record['user_id'] . '|' . $record['started_at']->toDateString())
             ->map(function (Collection $dayRecords): array {
                 $firstRecord = $dayRecords->first();
@@ -291,6 +291,27 @@ class WorkTimeReportService
                 ['fecha', 'asc'],
             ])
             ->values();
+
+        $userIds = $records->pluck('user_id')->unique();
+        if ($selectedUserId) {
+            $userIds = collect([$selectedUserId]);
+        }
+        $vacationRows = AbsenceRequest::with('user')
+            ->whereIn('user_id', $userIds)
+            ->where('status', 'approved')
+            ->where('type', 'vacation')
+            ->whereDate('starts_at', '<=', $endDate)
+            ->whereDate('ends_at', '>=', $startDate)
+            ->get()
+            ->flatMap(function (AbsenceRequest $absence) use ($startDate, $endDate): array {
+                $result = [];
+                for ($date = $absence->starts_at->copy()->max($startDate); $date->lte($absence->ends_at) && $date->lte($endDate); $date->addDay()) {
+                    $result[] = ['usuario'=>$absence->user->name, 'fecha'=>$date->toDateString(), 'entrada'=>'-', 'salida'=>'-', 'tipo'=>'Vacaciones', 'computables'=>'0h', 'trabajadas'=>'0h', 'justificadas'=>'0h', 'injustificadas'=>'0h'];
+                }
+                return $result;
+            });
+
+        return $rows->concat($vacationRows)->unique(fn (array $row): string => $row['usuario'].'|'.$row['fecha'])->sortBy([['usuario','asc'],['fecha','asc']])->values();
     }
 
     protected function normalizeRecord(WorkTimeRecord $record): array
