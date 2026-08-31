@@ -45,9 +45,6 @@ class ReportSummaryTable extends TableWidget
                     ->label('Empleado')
                     ->searchable(),
 
-                TextColumn::make('entrada')->label('Entrada'),
-                TextColumn::make('salida')->label('Salida'),
-
                 TextColumn::make('esperadas')
                     ->label('Esperadas'),
 
