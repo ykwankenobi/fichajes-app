@@ -12,6 +12,7 @@ use Illuminate\Notifications\Notifiable;
 use App\Models\AbsenceRequest;
 use App\Models\WorkTimeRecord;
 use App\Models\UserVacationBalance;
+use App\Notifications\ResetPasswordNotification;
 use Carbon\Carbon;
 use Filament\Models\Contracts\FilamentUser;
 use Filament\Panel;
@@ -122,8 +123,13 @@ class User extends Authenticatable implements FilamentUser
 		return $this->hasMany(UserVacationBalance::class);
 	}
 
-	public function canAccessPanel(Panel $panel): bool
+    public function canAccessPanel(Panel $panel): bool
 	{
 		return (bool) $this->is_admin;
-	}
+    }
+
+    public function sendPasswordResetNotification($token): void
+    {
+        $this->notify(new ResetPasswordNotification($token));
+    }
 }

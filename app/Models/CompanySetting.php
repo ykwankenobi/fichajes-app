@@ -17,6 +17,14 @@ class CompanySetting extends Model
         'country',
         'email',
         'phone',
+        'mail_from_name',
+        'mail_from_address',
+        'mail_reply_to',
+        'password_reset_subject',
+        'absence_request_subject',
+        'absence_approved_subject',
+        'absence_rejected_subject',
+        'work_time_incident_subject',
     ];
 
     public static function current(): self
@@ -35,6 +43,21 @@ class CompanySetting extends Model
         return $this->commercial_name
             ?: $this->legal_name
             ?: config('app.name', 'Control Horario');
+    }
+
+    public function mailFromName(): string
+    {
+        return $this->mail_from_name ?: 'Registro Horario ' . $this->displayName();
+    }
+
+    public function mailFromAddress(): string
+    {
+        return $this->mail_from_address ?: (string) config('mail.from.address');
+    }
+
+    public function mailReplyTo(): ?string
+    {
+        return $this->mail_reply_to ?: null;
     }
 
     public function fullAddress(): ?string

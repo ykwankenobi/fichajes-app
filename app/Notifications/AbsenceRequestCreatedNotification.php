@@ -3,6 +3,7 @@
 namespace App\Notifications;
 
 use App\Models\AbsenceRequest;
+use App\Models\CompanySetting;
 use Illuminate\Bus\Queueable;
 use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Notifications\Notification;
@@ -38,8 +39,10 @@ class AbsenceRequestCreatedNotification extends Notification
         $endsAt = $this->absenceRequest->ends_at?->format('d/m/Y');
         $reason = $this->absenceRequest->reason ?: 'Sin motivo indicado';
 
-        return (new MailMessage)
-            ->subject('Nueva solicitud de ausencia')
+        $company = CompanySetting::current();
+        $message = (new MailMessage)
+            ->from($company->mailFromAddress(), $company->mailFromName())
+            ->subject($company->absence_request_subject ?: 'Nueva solicitud de ausencia')
             ->greeting('Nueva solicitud de ausencia')
             ->line("El empleado {$employeeName} ha enviado una nueva solicitud.")
             ->line("Tipo: {$type}")
@@ -48,5 +51,11 @@ class AbsenceRequestCreatedNotification extends Notification
             ->line("Motivo: {$reason}")
             ->action('Revisar solicitud', url('/admin/absence-requests/' . $this->absenceRequest->id . '/edit'))
             ->line('Puedes aprobarla o rechazarla desde el panel de administración.');
+
+        if ($replyTo = $company->mailReplyTo()) {
+            $message->replyTo($replyTo, $company->mailFromName());
+        }
+
+        return $message;
     }
 }

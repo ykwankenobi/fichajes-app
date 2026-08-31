@@ -3,6 +3,7 @@
 namespace App\Notifications;
 
 use App\Models\AbsenceRequest;
+use App\Models\CompanySetting;
 use Illuminate\Bus\Queueable;
 use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Notifications\Notification;
@@ -39,9 +40,10 @@ class AbsenceRequestReviewedNotification extends Notification
             default => $this->absenceRequest->status,
         };
 
+        $company = CompanySetting::current();
         $subject = match ($this->absenceRequest->status) {
-            'approved' => 'Solicitud de ausencia aprobada',
-            'rejected' => 'Solicitud de ausencia rechazada',
+            'approved' => $company->absence_approved_subject ?: 'Solicitud de ausencia aprobada',
+            'rejected' => $company->absence_rejected_subject ?: 'Solicitud de ausencia rechazada',
             default => 'Solicitud de ausencia revisada',
         };
 
@@ -50,7 +52,8 @@ class AbsenceRequestReviewedNotification extends Notification
         $reviewerName = $this->absenceRequest->reviewer?->name ?? 'Administración';
         $adminNotes = $this->absenceRequest->admin_notes ?: 'Sin notas adicionales';
 
-        return (new MailMessage)
+        $message = (new MailMessage)
+            ->from($company->mailFromAddress(), $company->mailFromName())
             ->subject($subject)
             ->greeting($subject)
             ->line("Tu solicitud de ausencia ha sido {$status}.")
@@ -61,5 +64,11 @@ class AbsenceRequestReviewedNotification extends Notification
             ->line("Notas de administración: {$adminNotes}")
             ->action('Ver mis ausencias', route('absence-requests.index'))
             ->line('Puedes consultar el estado desde tu panel de ausencias.');
+
+        if ($replyTo = $company->mailReplyTo()) {
+            $message->replyTo($replyTo, $company->mailFromName());
+        }
+
+        return $message;
     }
 }

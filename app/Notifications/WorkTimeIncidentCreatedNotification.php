@@ -3,6 +3,7 @@
 namespace App\Notifications;
 
 use App\Models\WorkTimeRecord;
+use App\Models\CompanySetting;
 use Illuminate\Bus\Queueable;
 use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Notifications\Notification;
@@ -36,8 +37,10 @@ class WorkTimeIncidentCreatedNotification extends Notification
             default => 'Incidencia de fichaje',
         };
 
-        return (new MailMessage)
-            ->subject('Nueva incidencia de fichaje')
+        $company = CompanySetting::current();
+        $message = (new MailMessage)
+            ->from($company->mailFromAddress(), $company->mailFromName())
+            ->subject($company->work_time_incident_subject ?: 'Nueva incidencia de fichaje')
             ->greeting('Nueva incidencia de fichaje')
             ->line("Se ha generado una incidencia para {$employeeName}.")
             ->line("Motivo: {$reason}")
@@ -46,5 +49,11 @@ class WorkTimeIncidentCreatedNotification extends Notification
             ->line("Minutos no justificados: {$unjustifiedMinutes}")
             ->action('Revisar incidencia', url('/admin/work-time-incidents/' . $this->workTimeRecord->id . '/edit'))
             ->line('Puedes revisarla desde el panel de administración.');
+
+        if ($replyTo = $company->mailReplyTo()) {
+            $message->replyTo($replyTo, $company->mailFromName());
+        }
+
+        return $message;
     }
 }

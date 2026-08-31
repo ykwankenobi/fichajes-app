@@ -96,6 +96,53 @@ class CompanySettings extends Page implements HasForms
                             ->maxLength(255),
                     ])
                     ->columns(2),
+
+                Section::make('Correo electrónico')
+                    ->description('Configura la identidad visible de los correos. Las credenciales SMTP permanecen en la configuración técnica del servidor.')
+                    ->schema([
+                        TextInput::make('mail_from_name')
+                            ->label('Nombre del remitente')
+                            ->placeholder('Registro Horario {nombre comercial}')
+                            ->maxLength(255),
+
+                        TextInput::make('mail_from_address')
+                            ->label('Dirección del remitente')
+                            ->email()
+                            ->placeholder('correo@empresa.es')
+                            ->maxLength(255),
+
+                        TextInput::make('mail_reply_to')
+                            ->label('Responder a')
+                            ->email()
+                            ->placeholder('Opcional')
+                            ->maxLength(255),
+
+                        TextInput::make('password_reset_subject')
+                            ->label('Asunto: restablecer contraseña')
+                            ->default('Restablecer contraseña - Registro Horario {nombre}')
+                            ->maxLength(255),
+
+                        TextInput::make('absence_request_subject')
+                            ->label('Asunto: nueva ausencia')
+                            ->default('Nueva solicitud de ausencia')
+                            ->maxLength(255),
+
+                        TextInput::make('absence_approved_subject')
+                            ->label('Asunto: ausencia aprobada')
+                            ->default('Solicitud de ausencia aprobada')
+                            ->maxLength(255),
+
+                        TextInput::make('absence_rejected_subject')
+                            ->label('Asunto: ausencia rechazada')
+                            ->default('Solicitud de ausencia rechazada')
+                            ->maxLength(255),
+
+                        TextInput::make('work_time_incident_subject')
+                            ->label('Asunto: incidencia de fichaje')
+                            ->default('Nueva incidencia de fichaje')
+                            ->maxLength(255),
+                    ])
+                    ->columns(2),
             ]);
     }
 
