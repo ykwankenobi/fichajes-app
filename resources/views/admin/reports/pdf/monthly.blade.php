@@ -247,7 +247,7 @@
                 <tbody>
                     @foreach ($employeeDays as $row)
                         <tr>
-                            <td>{{ \Carbon\Carbon::parse($row['fecha'])->format('d/m/Y') }}</td>
+                            <td>{{ \Carbon\Carbon::parse($row['fecha'])->format('d/m/Y') }}{{ ($row['tipo'] ?? null) === 'Vacaciones' ? ' · VACACIONES' : '' }}</td>
                             <td class="text-right">{{ $row['computables'] }}</td>
                             <td class="text-right">{{ $row['trabajadas'] }}</td>
                             <td class="text-right">{{ $row['justificadas'] }}</td>

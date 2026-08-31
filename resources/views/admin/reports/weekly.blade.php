@@ -225,6 +225,10 @@
 
 							{{ \Carbon\Carbon::parse($row['fecha'])->format('d/m/Y') }}
 
+							@if (($row['tipo'] ?? null) === 'Vacaciones')
+								<span class="ml-2 font-semibold text-amber-600">Vacaciones</span>
+							@endif
+
 							<span class="hidden sm:inline"> | </span>
 							<br class="sm:hidden">
 

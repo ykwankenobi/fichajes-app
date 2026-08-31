@@ -306,7 +306,7 @@ class WorkTimeReportService
             ->flatMap(function (AbsenceRequest $absence) use ($startDate, $endDate): array {
                 $result = [];
                 for ($date = $absence->starts_at->copy()->max($startDate); $date->lte($absence->ends_at) && $date->lte($endDate); $date->addDay()) {
-                    $result[] = ['usuario'=>$absence->user->name, 'fecha'=>$date->toDateString(), 'entrada'=>'-', 'salida'=>'-', 'tipo'=>'Vacaciones', 'computables'=>'0h', 'trabajadas'=>'0h', 'justificadas'=>'0h', 'injustificadas'=>'0h'];
+                    $result[] = ['usuario'=>$absence->user->name, 'fecha'=>$date->toDateString(), 'entrada'=>'-', 'salida'=>'-', 'tipo'=>'Vacaciones', 'computables'=>'-', 'trabajadas'=>'-', 'justificadas'=>'-', 'injustificadas'=>'-'];
                 }
                 return $result;
             });
