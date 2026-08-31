@@ -105,7 +105,7 @@ class CompanySettings extends Page implements HasForms
                     ])
                     ->columns(2),
 
-                Section::make('Calendario laboral')
+                Section::make('Festivos')
                     ->description('Indica qué días de la semana se consideran laborables. Los festivos importados se excluyen aparte.')
                     ->schema([
                         CheckboxList::make('working_days')

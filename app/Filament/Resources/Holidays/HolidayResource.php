@@ -22,7 +22,7 @@ class HolidayResource extends Resource
     protected static ?string $slug = 'holidays';
     protected static ?string $modelLabel = 'festivo';
     protected static ?string $pluralModelLabel = 'festivos';
-    protected static ?string $navigationLabel = 'Festivos';
+    protected static ?string $navigationLabel = 'Calendario laboral';
     protected static ?int $navigationSort = 25;
 
     public static function form(Schema $schema): Schema

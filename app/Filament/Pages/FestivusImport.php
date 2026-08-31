@@ -37,7 +37,7 @@ class FestivusImport extends Page implements HasForms
     public function form(Schema $schema): Schema
     {
         return $schema->statePath('data')->components([
-            Section::make('Calendario laboral')
+            Section::make('Festivos')
                 ->description('Busca cualquier municipio de España e importa sus festivos nacionales, autonómicos y locales desde festivos.io.')
                 ->schema([
                     Select::make('municipality')
