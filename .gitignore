@@ -19,6 +19,7 @@
 /public/hot
 /public/images/logo.*
 /public/storage
+/public/vendor
 /storage/*.key
 /storage/pail
 /storage/app/installed
