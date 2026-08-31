@@ -10,3 +10,6 @@ Artisan::command('inspire', function () {
 
 Schedule::command('fichajes:close-open-records')
     ->dailyAt('00:10');
+
+Schedule::command('fichajes:generate-attendance')
+    ->dailyAt('23:55');
