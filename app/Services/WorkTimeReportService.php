@@ -202,6 +202,8 @@ class WorkTimeReportService
                 $justifiedMinutes = $userRecords->sum('justified_exit_minutes');
                 $unjustifiedMinutes = $userRecords->sum('unjustified_exit_minutes');
                 $computableMinutes = $workedMinutes + $justifiedMinutes;
+                $entrada = $userRecords->min('started_at');
+                $salida = $userRecords->filter(fn (array $record): bool => $record['ended_at'] !== null)->max('ended_at');
 
                 $expectedMinutes = $this->expectedMinutes($user, $startDate, $endDate);
 
@@ -209,6 +211,8 @@ class WorkTimeReportService
 
                 return [
                     'usuario' => $user->name,
+                    'entrada' => $entrada?->format('H:i') ?? '-',
+                    'salida' => $salida?->format('H:i') ?? '-',
                     'trabajadas' => $this->formatMinutes($workedMinutes),
                     'justificadas' => $this->formatMinutes($justifiedMinutes),
                     'injustificadas' => $this->formatMinutes($unjustifiedMinutes),
@@ -268,10 +272,14 @@ class WorkTimeReportService
                 $justifiedMinutes = $dayRecords->sum('justified_exit_minutes');
                 $unjustifiedMinutes = $dayRecords->sum('unjustified_exit_minutes');
                 $computableMinutes = $workedMinutes + $justifiedMinutes;
+                $entrada = $dayRecords->min('started_at');
+                $salida = $dayRecords->filter(fn (array $record): bool => $record['ended_at'] !== null)->max('ended_at');
 
                 return [
                     'usuario' => $user->name,
                     'fecha' => $firstRecord['started_at']->toDateString(),
+                    'entrada' => $entrada?->format('H:i') ?? '-',
+                    'salida' => $salida?->format('H:i') ?? '-',
                     'trabajadas' => $this->formatMinutes($workedMinutes),
                     'justificadas' => $this->formatMinutes($justifiedMinutes),
                     'injustificadas' => $this->formatMinutes($unjustifiedMinutes),
