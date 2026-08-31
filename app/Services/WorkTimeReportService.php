@@ -5,6 +5,7 @@ namespace App\Services;
 use App\Models\WorkTimeRecord;
 use App\Models\WorkTimeRecordCorrection;
 use App\Models\Holiday;
+use App\Models\AbsenceRequest;
 use Carbon\Carbon;
 use Illuminate\Support\Collection;
 
@@ -233,6 +234,13 @@ class WorkTimeReportService
                 continue;
             }
             if (Holiday::whereDate('date', $date)->exists()) {
+                continue;
+            }
+            if (AbsenceRequest::where('user_id', $user->id)
+                ->where('status', 'approved')
+                ->whereDate('starts_at', '<=', $date)
+                ->whereDate('ends_at', '>=', $date)
+                ->exists()) {
                 continue;
             }
             $expectedDays++;
