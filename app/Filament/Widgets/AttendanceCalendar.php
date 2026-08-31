@@ -84,7 +84,11 @@ class AttendanceCalendar extends FullCalendarWidget
                     ->extendedProps(['tipo' => 'Fichaje']);
             });
 
-        return $events;
+        // Return plain arrays so Livewire serializes the event payload consistently.
+        return array_map(
+            static fn (EventData $event): array => $event->toArray(),
+            $events,
+        );
     }
 
     public function config(): array
