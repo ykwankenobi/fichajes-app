@@ -17,7 +17,7 @@ class AdminStatsOverview extends StatsOverviewWidget
 
     protected int | array | null $columns = [
         'default' => 1,
-        'md' => 2,
+        'md' => 4,
     ];
 
     protected function getStats(): array
