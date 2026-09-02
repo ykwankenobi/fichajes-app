@@ -8,7 +8,6 @@ use App\Models\WorkTimeRecord;
 use Carbon\Carbon;
 use Filament\Actions\Action;
 use Filament\Support\Enums\Width;
-use Illuminate\Support\Collection;
 use Saade\FilamentFullCalendar\Data\EventData;
 use Saade\FilamentFullCalendar\Widgets\FullCalendarWidget;
 
@@ -37,7 +36,7 @@ class AttendanceCalendar extends FullCalendarWidget
         return Action::make('view')
             ->modalHeading(fn (array $arguments): string => 'Fichajes del '.$this->eventDate($arguments)->format('d/m/Y'))
             ->modalContent(fn (array $arguments) => view('filament.widgets.daily-attendance-modal', [
-                'records' => $this->recordsForDate($this->eventDate($arguments)),
+                'date' => $this->eventDate($arguments)->toDateString(),
             ]))
             ->modalWidth(Width::FiveExtraLarge)
             ->modalSubmitAction(false)
@@ -133,38 +132,5 @@ class AttendanceCalendar extends FullCalendarWidget
     protected function eventDate(array $arguments): Carbon
     {
         return Carbon::parse($arguments['event']['start'] ?? now())->startOfDay();
-    }
-
-    protected function recordsForDate(Carbon $date): Collection
-    {
-        return WorkTimeRecord::query()
-            ->with(['user:id,name', 'latestApprovedCorrection'])
-            ->whereBetween('started_at', [$date->copy()->startOfDay(), $date->copy()->endOfDay()])
-            ->orderBy('started_at')
-            ->get()
-            ->map(function (WorkTimeRecord $record): array {
-                $correction = $record->latestApprovedCorrection;
-                $startedAt = $correction?->corrected_started_at ?? $record->started_at;
-                $endedAt = $correction?->corrected_ended_at ?? $record->ended_at;
-                $minutes = $endedAt ? (int) $startedAt->diffInMinutes($endedAt) : null;
-
-                return [
-                    'employee' => $record->user?->name ?? 'Empleado',
-                    'type' => match ($record->record_type) {
-                        WorkTimeRecord::TYPE_JUSTIFIED_EXIT => 'Salida justificada',
-                        WorkTimeRecord::TYPE_UNJUSTIFIED_EXIT => 'Salida no justificada',
-                        default => 'Trabajo',
-                    },
-                    'started_at' => $startedAt->format('H:i'),
-                    'ended_at' => $endedAt?->format('H:i') ?? 'Abierto',
-                    'duration' => $minutes === null
-                        ? '—'
-                        : sprintf('%d h %02d min', intdiv($minutes, 60), $minutes % 60),
-                    'status' => $record->requires_review
-                        ? 'Requiere revisión'
-                        : ($record->closed_automatically ? 'Cierre automático' : ($endedAt ? 'Cerrado' : 'En curso')),
-                    'corrected' => $correction !== null,
-                ];
-            });
     }
 }
