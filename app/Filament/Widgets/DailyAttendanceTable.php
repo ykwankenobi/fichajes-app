@@ -12,6 +12,8 @@ use Illuminate\Support\Collection;
 
 class DailyAttendanceTable extends TableWidget
 {
+    protected static bool $isDiscovered = false;
+
     protected static ?string $heading = 'Fichajes del día';
 
     public string $date;

@@ -11,6 +11,8 @@ use Illuminate\Support\Collection;
 
 class DailyAbsenceTable extends TableWidget
 {
+    protected static bool $isDiscovered = false;
+
     protected static ?string $heading = 'Ausencias del día';
 
     public string $date;
