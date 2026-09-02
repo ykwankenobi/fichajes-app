@@ -20,6 +20,12 @@ class AttendanceCalendar extends FullCalendarWidget
         return [];
     }
 
+    public function onEventClick(array $event): void
+    {
+        // This calendar combines events from multiple models, so the package's
+        // record-based view action cannot resolve a single Eloquent record.
+    }
+
     public function fetchEvents(array $info): array
     {
         $start = Carbon::parse($info['start'])->startOfDay();
