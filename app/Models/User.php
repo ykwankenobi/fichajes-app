@@ -96,16 +96,29 @@ class User extends Authenticatable implements FilamentUser
 			->where('status', 'approved')
 			->whereYear('starts_at', $year)
 			->get()
-			->sum(function ($absence) {
-				$days = 0;
-				for ($date = $absence->starts_at->copy(); $date->lte($absence->ends_at); $date->addDay()) {
-					if (! Holiday::isHoliday($date)) {
-						$days++;
-					}
-				}
+			->sum(fn ($absence): int => $this->vacationDaysBetween($absence->starts_at, $absence->ends_at));
+	}
 
-				return $days;
-			});
+	public function vacationDaysBetween(Carbon $startDate, Carbon $endDate): int
+	{
+		$settings = CompanySetting::current();
+
+		if ($settings->vacation_counting_method === 'calendar') {
+			return (int) $startDate->diffInDays($endDate) + 1;
+		}
+
+		$workingDays = $this->working_days
+			?: $settings->working_days
+			?: ['monday', 'tuesday', 'wednesday', 'thursday', 'friday'];
+		$days = 0;
+
+		for ($date = $startDate->copy(); $date->lte($endDate); $date->addDay()) {
+			if (in_array(strtolower($date->englishDayOfWeek), $workingDays, true) && ! Holiday::isHoliday($date)) {
+				$days++;
+			}
+		}
+
+		return $days;
 	}
 
 	public function vacationDaysAvailableForYear(int $year): int
@@ -114,7 +127,9 @@ class User extends Authenticatable implements FilamentUser
 			->where('year', $year)
 			->first();
 
-		$totalDays = $balance?->total_days ?? 22;
+		$totalDays = $balance?->total_days
+			?? CompanySetting::current()->annual_vacation_days
+			?? 22;
 
 		return max(
 			0,

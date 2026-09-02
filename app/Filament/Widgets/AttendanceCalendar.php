@@ -72,9 +72,9 @@ class AttendanceCalendar extends FullCalendarWidget
                     ->title('Festivo: '.$holiday->name)
                     ->start($holiday->date->toDateString())
                     ->allDay()
-                    ->backgroundColor('#f59e0b')
-                    ->borderColor('#f59e0b')
-                    ->textColor('#451a03')
+                    ->backgroundColor('#dc2626')
+                    ->borderColor('#dc2626')
+                    ->textColor('#ffffff')
                     ->extendedProps(['tipo' => 'Festivo']);
             });
 
@@ -91,7 +91,6 @@ class AttendanceCalendar extends FullCalendarWidget
                 for ($date = $from->startOfDay(); $date->lte($until); $date->addDay()) {
                     $days[] = [
                         'date' => $date->toDateString(),
-                        'pending' => $absence->status === 'pending',
                     ];
                 }
 
@@ -100,16 +99,14 @@ class AttendanceCalendar extends FullCalendarWidget
             ->groupBy('date')
             ->each(function ($absences, string $date) use (&$events): void {
                 $count = $absences->count();
-                $hasPending = $absences->contains('pending', true);
-                $color = $hasPending ? '#a855f7' : '#22c55e';
-
                 $events[] = EventData::make()
                     ->id('absences-'.$date)
                     ->title($count.' '.($count === 1 ? 'ausencia' : 'ausencias'))
                     ->start($date)
                     ->allDay()
-                    ->backgroundColor($color)
-                    ->borderColor($color)
+                    ->backgroundColor('#f59e0b')
+                    ->borderColor('#f59e0b')
+                    ->textColor('#451a03')
                     ->extendedProps(['tipo' => 'Ausencias', 'cantidad' => $count]);
             });
 

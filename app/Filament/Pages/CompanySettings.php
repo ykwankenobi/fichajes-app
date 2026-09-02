@@ -4,15 +4,16 @@ namespace App\Filament\Pages;
 
 use App\Models\CompanySetting;
 use BackedEnum;
+use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
+use Filament\Forms\Concerns\InteractsWithForms;
+use Filament\Forms\Contracts\HasForms;
 use Filament\Notifications\Notification;
 use Filament\Pages\Dashboard;
 use Filament\Pages\Page;
 use Filament\Schemas\Components\Section;
 use Filament\Schemas\Schema;
 use Filament\Support\Icons\Heroicon;
-use Filament\Forms\Concerns\InteractsWithForms;
-use Filament\Forms\Contracts\HasForms;
 
 class CompanySettings extends Page implements HasForms
 {
@@ -101,6 +102,34 @@ class CompanySettings extends Page implements HasForms
                             ->length(5)
                             ->numeric()
                             ->maxLength(5),
+                    ])
+                    ->columns(2),
+
+                Section::make('Vacaciones')
+                    ->description('Configura el modo de cómputo definido por el convenio o acuerdo aplicable a la empresa.')
+                    ->schema([
+                        Select::make('vacation_counting_method')
+                            ->label('Tipo de días de vacaciones')
+                            ->options([
+                                'working' => 'Días laborables',
+                                'calendar' => 'Días naturales',
+                            ])
+                            ->default('working')
+                            ->required()
+                            ->live()
+                            ->afterStateUpdated(function (?string $state, callable $set): void {
+                                $set('annual_vacation_days', $state === 'calendar' ? 30 : 22);
+                            }),
+
+                        TextInput::make('annual_vacation_days')
+                            ->label('Días de vacaciones al año')
+                            ->helperText('Valor general; el saldo individual del empleado, si existe, tiene prioridad.')
+                            ->numeric()
+                            ->integer()
+                            ->minValue(1)
+                            ->maxValue(366)
+                            ->default(22)
+                            ->required(),
                     ])
                     ->columns(2),
 

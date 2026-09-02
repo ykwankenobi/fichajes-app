@@ -5,10 +5,10 @@ namespace App\Http\Controllers;
 use App\Models\AbsenceRequest;
 use App\Models\User;
 use App\Notifications\AbsenceRequestCreatedNotification;
+use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Validation\Rule;
-use Carbon\Carbon;
 
 class AbsenceRequestController extends Controller
 {
@@ -71,7 +71,7 @@ class AbsenceRequestController extends Controller
         $endDate = Carbon::parse($validated['ends_at']);
 
         if ($validated['type'] === 'vacation') {
-            $requestedDays = $startDate->diffInDays($endDate) + 1;
+            $requestedDays = $request->user()->vacationDaysBetween($startDate, $endDate);
 
             $availableDays = $request->user()
                 ->vacationDaysAvailableForYear($startDate->year);

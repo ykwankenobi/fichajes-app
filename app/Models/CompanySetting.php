@@ -27,10 +27,13 @@ class CompanySetting extends Model
         'work_time_incident_subject',
         'holiday_municipality_ine',
         'working_days',
+        'vacation_counting_method',
+        'annual_vacation_days',
     ];
 
     protected $casts = [
         'working_days' => 'array',
+        'annual_vacation_days' => 'integer',
     ];
 
     public static function current(): self
@@ -40,6 +43,8 @@ class CompanySetting extends Model
             [
                 'commercial_name' => config('app.name', 'Control Horario'),
                 'country' => 'España',
+                'vacation_counting_method' => 'working',
+                'annual_vacation_days' => 22,
             ]
         );
     }
@@ -53,7 +58,7 @@ class CompanySetting extends Model
 
     public function mailFromName(): string
     {
-        return $this->mail_from_name ?: 'Registro Horario ' . $this->displayName();
+        return $this->mail_from_name ?: 'Registro Horario '.$this->displayName();
     }
 
     public function mailFromAddress(): string
@@ -70,7 +75,7 @@ class CompanySetting extends Model
     {
         $parts = array_filter([
             $this->address,
-            trim(($this->postal_code ?? '') . ' ' . ($this->city ?? '')),
+            trim(($this->postal_code ?? '').' '.($this->city ?? '')),
             $this->province,
             $this->country,
         ]);
