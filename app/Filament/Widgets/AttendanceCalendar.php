@@ -74,22 +74,21 @@ class AttendanceCalendar extends FullCalendarWidget
             });
 
         WorkTimeRecord::query()
-            ->with('user:id,name')
             ->whereNotNull('started_at')
-            ->where('started_at', '<=', $end)
-            ->where(function ($query) use ($start): void {
-                $query->whereNull('ended_at')->orWhere('ended_at', '>=', $start);
-            })
+            ->whereBetween('started_at', [$start, $end])
             ->get()
-            ->each(function (WorkTimeRecord $record) use (&$events): void {
+            ->groupBy(fn (WorkTimeRecord $record): string => $record->started_at->toDateString())
+            ->each(function ($records, string $date) use (&$events): void {
+                $count = $records->count();
+
                 $events[] = EventData::make()
-                    ->id('record-'.$record->id)
-                    ->title('Fichaje · '.($record->user?->name ?? 'Empleado'))
-                    ->start($record->started_at)
-                    ->end($record->ended_at)
+                    ->id('records-'.$date)
+                    ->title($count.' '.($count === 1 ? 'fichaje' : 'fichajes'))
+                    ->start($date)
+                    ->allDay()
                     ->backgroundColor('#3b82f6')
                     ->borderColor('#3b82f6')
-                    ->extendedProps(['tipo' => 'Fichaje']);
+                    ->extendedProps(['tipo' => 'Fichajes', 'cantidad' => $count]);
             });
 
         // Return plain arrays so Livewire serializes the event payload consistently.
