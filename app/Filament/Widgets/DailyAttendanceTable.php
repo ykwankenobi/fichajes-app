@@ -12,7 +12,7 @@ use Illuminate\Support\Collection;
 
 class DailyAttendanceTable extends TableWidget
 {
-    protected static ?string $heading = null;
+    protected static ?string $heading = 'Fichajes del día';
 
     public string $date;
 
