@@ -24,11 +24,13 @@ class AttendanceCalendar extends FullCalendarWidget
 
     public function onEventClick(array $event): void
     {
-        if (! str_starts_with((string) ($event['id'] ?? ''), 'records-')) {
-            return;
-        }
+        $eventId = (string) ($event['id'] ?? '');
 
-        $this->mountAction('view', ['event' => $event]);
+        if (str_starts_with($eventId, 'records-')) {
+            $this->mountAction('view', ['event' => $event]);
+        } elseif (str_starts_with($eventId, 'absences-')) {
+            $this->mountAction('viewAbsences', ['event' => $event]);
+        }
     }
 
     protected function viewAction(): Action
@@ -36,6 +38,18 @@ class AttendanceCalendar extends FullCalendarWidget
         return Action::make('view')
             ->modalHeading(fn (array $arguments): string => 'Fichajes del '.$this->eventDate($arguments)->format('d/m/Y'))
             ->modalContent(fn (array $arguments) => view('filament.widgets.daily-attendance-modal', [
+                'date' => $this->eventDate($arguments)->toDateString(),
+            ]))
+            ->modalWidth(Width::FiveExtraLarge)
+            ->modalSubmitAction(false)
+            ->modalCancelActionLabel('Cerrar');
+    }
+
+    protected function viewAbsencesAction(): Action
+    {
+        return Action::make('viewAbsences')
+            ->modalHeading(fn (array $arguments): string => 'Ausencias del '.$this->eventDate($arguments)->format('d/m/Y'))
+            ->modalContent(fn (array $arguments) => view('filament.widgets.daily-absence-modal', [
                 'date' => $this->eventDate($arguments)->toDateString(),
             ]))
             ->modalWidth(Width::FiveExtraLarge)
@@ -65,29 +79,38 @@ class AttendanceCalendar extends FullCalendarWidget
             });
 
         AbsenceRequest::query()
-            ->with('user:id,name')
             ->whereIn('status', ['pending', 'approved'])
             ->whereDate('starts_at', '<=', $end)
             ->whereDate('ends_at', '>=', $start)
             ->get()
-            ->each(function (AbsenceRequest $absence) use (&$events): void {
-                $status = $absence->status === 'approved' ? 'Aprobada' : 'Pendiente';
-                $type = match ($absence->type) {
-                    'vacation' => 'Vacaciones',
-                    'sick_leave' => 'Baja médica',
-                    default => 'Ausencia',
-                };
-                $color = $absence->status === 'approved' ? '#22c55e' : '#a855f7';
+            ->flatMap(function (AbsenceRequest $absence) use ($start, $end): array {
+                $from = $absence->starts_at->greaterThan($start) ? $absence->starts_at->copy() : $start->copy();
+                $until = $absence->ends_at->lessThan($end) ? $absence->ends_at->copy() : $end->copy();
+                $days = [];
+
+                for ($date = $from->startOfDay(); $date->lte($until); $date->addDay()) {
+                    $days[] = [
+                        'date' => $date->toDateString(),
+                        'pending' => $absence->status === 'pending',
+                    ];
+                }
+
+                return $days;
+            })
+            ->groupBy('date')
+            ->each(function ($absences, string $date) use (&$events): void {
+                $count = $absences->count();
+                $hasPending = $absences->contains('pending', true);
+                $color = $hasPending ? '#a855f7' : '#22c55e';
 
                 $events[] = EventData::make()
-                    ->id('absence-'.$absence->id)
-                    ->title($type.' · '.($absence->user?->name ?? 'Empleado'))
-                    ->start($absence->starts_at->toDateString())
-                    ->end($absence->ends_at->copy()->addDay()->toDateString())
+                    ->id('absences-'.$date)
+                    ->title($count.' '.($count === 1 ? 'ausencia' : 'ausencias'))
+                    ->start($date)
                     ->allDay()
                     ->backgroundColor($color)
                     ->borderColor($color)
-                    ->extendedProps(['tipo' => $type, 'estado' => $status]);
+                    ->extendedProps(['tipo' => 'Ausencias', 'cantidad' => $count]);
             });
 
         WorkTimeRecord::query()
