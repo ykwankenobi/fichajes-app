@@ -76,6 +76,35 @@ php artisan migrate --force
 php artisan optimize
 ```
 
+## Despliegue centralizado
+
+El flujo de GitHub Actions `.github/workflows/deploy.yml` actualiza todas las
+instancias después de cada cambio en `main`. Solo descarga código y ejecuta las
+migraciones propias de cada base de datos; no sincroniza `.env`, logos,
+`storage/` ni archivos de usuarios.
+
+Antes de activarlo, configura estos valores en **GitHub → Settings → Secrets
+and variables → Actions**:
+
+- Variable `DEPLOY_TARGETS`: lista JSON con los servidores y directorios de
+  cada instancia. Ejemplo:
+
+  ```json
+  [
+    {"name":"Elcos","host":"servidor.example.com","user":"deploy","path":"/home/deploy/htdocs/fichaje.elcos.es","port":22},
+    {"name":"Empresa 2","host":"servidor.example.com","user":"deploy","path":"/home/deploy/htdocs/fichaje.empresa2.es","port":22}
+  ]
+  ```
+
+- Secreto `DEPLOY_SSH_PRIVATE_KEY`: clave privada del usuario de despliegue.
+- Secreto `DEPLOY_SSH_KNOWN_HOSTS`: salida de `ssh-keyscan` para los servidores.
+
+El usuario SSH debe poder ejecutar los comandos de actualización en cada
+directorio de la aplicación. Mientras `DEPLOY_TARGETS` esté vacío, el flujo no
+intentará desplegar nada. Cuando se haya configurado, ejecuta manualmente
+**Actions → Desplegar instancias → Run workflow** para desplegar el commit
+actual; después se ejecutará en cada actualización de `main`.
+
 ## Desarrollo y pruebas
 
 ```bash

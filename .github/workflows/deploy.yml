@@ -1,0 +1,66 @@
+name: Desplegar instancias
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  prepare:
+    name: Preparar destinos
+    if: ${{ vars.DEPLOY_TARGETS != '' }}
+    runs-on: ubuntu-latest
+    outputs:
+      targets: ${{ steps.targets.outputs.value }}
+    steps:
+      - id: targets
+        env:
+          DEPLOY_TARGETS: ${{ vars.DEPLOY_TARGETS }}
+        run: echo "value=$DEPLOY_TARGETS" >> "$GITHUB_OUTPUT"
+
+  deploy:
+    name: Desplegar ${{ matrix.target.name }}
+    needs: prepare
+    if: ${{ needs.prepare.result == 'success' }}
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        target: ${{ fromJSON(needs.prepare.outputs.targets) }}
+    steps:
+      - name: Configurar SSH
+        env:
+          SSH_PRIVATE_KEY: ${{ secrets.DEPLOY_SSH_PRIVATE_KEY }}
+          SSH_KNOWN_HOSTS: ${{ secrets.DEPLOY_SSH_KNOWN_HOSTS }}
+        run: |
+          install -m 700 -d ~/.ssh
+          printf '%s\n' "$SSH_PRIVATE_KEY" > ~/.ssh/id_ed25519
+          chmod 600 ~/.ssh/id_ed25519
+          printf '%s\n' "$SSH_KNOWN_HOSTS" > ~/.ssh/known_hosts
+          chmod 600 ~/.ssh/known_hosts
+
+      - name: Actualizar código y dependencias
+        env:
+          DEPLOY_HOST: ${{ matrix.target.host }}
+          DEPLOY_PATH: ${{ matrix.target.path }}
+          DEPLOY_PORT: ${{ matrix.target.port || 22 }}
+          DEPLOY_USER: ${{ matrix.target.user }}
+        run: |
+          ssh -i ~/.ssh/id_ed25519 -o BatchMode=yes -p "$DEPLOY_PORT" "$DEPLOY_USER@$DEPLOY_HOST" \
+            'bash -se' -- "$DEPLOY_PATH" <<'REMOTE'
+          set -euo pipefail
+
+          deploy_path="$1"
+          cd "$deploy_path"
+
+          git pull --ff-only origin main
+          composer install --no-dev --prefer-dist --optimize-autoloader
+          npm ci
+          npm run build
+          php artisan migrate --force
+          php artisan optimize
+          REMOTE
