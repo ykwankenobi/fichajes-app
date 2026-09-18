@@ -38,11 +38,23 @@ APP_NAME="Nombre de la empresa"
 APP_URL=https://fichajes.empresa.example
 BRAND_PRIMARY_COLOR=red
 BRAND_LOGO=images/logo.png
+# Opcional. Si queda vacío, se genera una ruta distinta por instancia.
+KIOSK_PATH=
 ```
 
 Los colores admitidos son `red`, `sky`, `blue`, `green`, `amber` e `indigo`.
 Si `BRAND_LOGO` queda vacío o el archivo no existe, se muestra `APP_NAME`.
 El logo es específico de cada servidor y no debe añadirse al repositorio.
+
+## Terminal de fichajes con PIN
+
+La portada de la instancia abre el inicio de sesión de usuario. El fichaje con
+PIN está pensado para un terminal del centro y usa una ruta privada distinta en
+cada instancia, derivada de `APP_KEY` salvo que se configure `KIOSK_PATH`.
+
+Un administrador puede abrirla desde **Ajustes de empresa → Terminal de
+fichajes**. En Android, abre el enlace desde Chrome y pulsa **Instalar app**.
+La PWA se inicia directamente en el terminal, sin barra de direcciones.
 
 Después de cambiar `.env`:
 

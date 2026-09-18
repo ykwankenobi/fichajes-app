@@ -8,23 +8,45 @@ use App\Http\Controllers\WorkTimeRecordController;
 use App\Http\Controllers\AbsenceRequestController;
 use Illuminate\Support\Facades\Route;
 
-Route::get('/', [KioskWorkTimeController::class, 'index'])
-    ->name('kiosk.index');
+Route::redirect('/', '/login');
 
-Route::post('/fichaje-pin', [KioskWorkTimeController::class, 'verify'])
-    ->name('kiosk.verify');
+Route::prefix(config('kiosk.path'))->group(function (): void {
+    Route::get('/', [KioskWorkTimeController::class, 'index'])
+        ->name('kiosk.index');
 
-Route::get('/fichaje-pin/{token}', [KioskWorkTimeController::class, 'show'])
-    ->name('kiosk.show');
+    Route::get('/manifest.webmanifest', function () {
+        return response()->json([
+            'name' => 'Fichajes - '.config('app.name'),
+            'short_name' => 'Fichajes',
+            'start_url' => route('kiosk.index'),
+            'scope' => route('kiosk.index'),
+            'display' => 'standalone',
+            'background_color' => '#f9fafb',
+            'theme_color' => '#dc2626',
+            'icons' => [[
+                'src' => asset('images/kiosk-icon.svg'),
+                'sizes' => 'any',
+                'type' => 'image/svg+xml',
+                'purpose' => 'any maskable',
+            ]],
+        ], 200, ['Content-Type' => 'application/manifest+json']);
+    })->name('kiosk.manifest');
 
-Route::post('/fichaje-pin/{token}/entrada', [KioskWorkTimeController::class, 'clockIn'])
-    ->name('kiosk.clock-in');
+    Route::post('/', [KioskWorkTimeController::class, 'verify'])
+        ->name('kiosk.verify');
 
-Route::post('/fichaje-pin/{token}/salida', [KioskWorkTimeController::class, 'clockOut'])
-    ->name('kiosk.clock-out');
+    Route::get('/{token}', [KioskWorkTimeController::class, 'show'])
+        ->name('kiosk.show');
 
-Route::post('/fichaje-pin/{token}/finalizar-salida', [KioskWorkTimeController::class, 'finishExit'])
-    ->name('kiosk.finish-exit');
+    Route::post('/{token}/entrada', [KioskWorkTimeController::class, 'clockIn'])
+        ->name('kiosk.clock-in');
+
+    Route::post('/{token}/salida', [KioskWorkTimeController::class, 'clockOut'])
+        ->name('kiosk.clock-out');
+
+    Route::post('/{token}/finalizar-salida', [KioskWorkTimeController::class, 'finishExit'])
+        ->name('kiosk.finish-exit');
+});
 Route::get('/dashboard', [DashboardController::class, 'index'])
     ->middleware(['auth', 'verified'])
     ->name('dashboard');

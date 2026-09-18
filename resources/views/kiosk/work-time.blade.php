@@ -29,7 +29,9 @@
         <meta charset="utf-8">
         <meta name="viewport" content="width=device-width, initial-scale=1">
         <meta name="csrf-token" content="{{ csrf_token() }}">
+        <meta name="theme-color" content="{{ $brand['600'] }}">
         <title>Fichajes</title>
+        <link rel="manifest" href="{{ route('kiosk.manifest') }}">
         <link rel="preconnect" href="https://fonts.bunny.net">
         <link href="https://fonts.bunny.net/css?family=inter:400,500,600,700&display=swap" rel="stylesheet" />
         @vite(['resources/css/app.css', 'resources/js/app.js'])
@@ -56,12 +58,13 @@
                 <x-application-logo class="h-10 w-auto min-w-0 shrink sm:h-12" />
 
                 <div class="flex shrink-0 items-center gap-2">
-                    <a
-                        href="{{ route('login') }}"
-                        class="brand-focus inline-flex min-h-10 items-center justify-center rounded-lg border border-gray-300 bg-white px-3 text-sm font-semibold text-gray-700 shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 sm:px-4"
+                    <button
+                        id="install-kiosk-app"
+                        type="button"
+                        class="brand-button hidden min-h-10 items-center justify-center rounded-lg px-3 text-sm font-semibold text-white shadow-sm focus:outline-none focus:ring-2 focus:ring-offset-2 sm:px-4"
                     >
-                        Mi panel
-                    </a>
+                        Instalar app
+                    </button>
 
                     <a
                         href="{{ url('/admin') }}"
@@ -272,6 +275,32 @@
         </main>
         <script>
             (() => {
+                let installPrompt;
+                const installButton = document.getElementById('install-kiosk-app');
+
+                window.addEventListener('beforeinstallprompt', (event) => {
+                    event.preventDefault();
+                    installPrompt = event;
+                    installButton?.classList.remove('hidden');
+                    installButton?.classList.add('inline-flex');
+                });
+
+                installButton?.addEventListener('click', async () => {
+                    if (!installPrompt) return;
+
+                    installPrompt.prompt();
+                    await installPrompt.userChoice;
+                    installPrompt = null;
+                    installButton.classList.add('hidden');
+                    installButton.classList.remove('inline-flex');
+                });
+
+                if ('serviceWorker' in navigator) {
+                    window.addEventListener('load', () => {
+                        navigator.serviceWorker.register('{{ asset('kiosk-sw.js') }}');
+                    });
+                }
+
                 const clock = document.getElementById('kiosk-clock');
                 if (!clock) return;
 

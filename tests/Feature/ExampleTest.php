@@ -9,13 +9,11 @@ class ExampleTest extends TestCase
 {
     use RefreshDatabase;
 
-    public function test_the_application_shows_the_kiosk_work_time_screen(): void
+    public function test_the_application_redirects_to_the_user_login_screen(): void
     {
         $response = $this->get('/');
 
         $response
-            ->assertOk()
-            ->assertSee('Fichajes')
-            ->assertSee('Selecciona tu nombre');
+            ->assertRedirect('/login');
     }
 }

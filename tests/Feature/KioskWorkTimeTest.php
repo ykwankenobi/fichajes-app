@@ -19,7 +19,7 @@ class KioskWorkTimeTest extends TestCase
             'pin_hash' => Hash::make('1234'),
         ]);
 
-        $response = $this->get('/');
+        $response = $this->get(route('kiosk.index'));
 
         $response
             ->assertOk()
@@ -35,13 +35,13 @@ class KioskWorkTimeTest extends TestCase
             'pin_hash' => Hash::make('1234'),
         ]);
 
-        $response = $this->from('/')->post(route('kiosk.verify'), [
+        $response = $this->from(route('kiosk.index'))->post(route('kiosk.verify'), [
             'user_id' => $user->id,
             'pin' => '9999',
         ]);
 
         $response
-            ->assertRedirect('/')
+            ->assertRedirect(route('kiosk.index'))
             ->assertSessionHasErrors('pin');
 
         $this->assertGuest();
