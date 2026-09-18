@@ -49,11 +49,17 @@
             .brand-button { background: var(--brand-600); }
             .brand-button:hover { background: var(--brand-700); }
             .brand-button:focus { --tw-ring-color: var(--brand-500); }
+            html,
+            body {
+                height: 100%;
+                overflow: hidden;
+                overscroll-behavior: none;
+            }
         </style>
     </head>
 
-    <body class="min-h-screen bg-gray-50 text-gray-950 antialiased" style="font-family: Inter, ui-sans-serif, system-ui, sans-serif;">
-        <main class="mx-auto flex min-h-screen w-full max-w-4xl flex-col px-4 py-3 sm:px-6 sm:py-4">
+    <body class="h-[100dvh] bg-gray-50 text-gray-950 antialiased" style="font-family: Inter, ui-sans-serif, system-ui, sans-serif;">
+        <main class="mx-auto flex h-full w-full max-w-4xl flex-col overflow-hidden px-4 py-3 sm:px-6 sm:py-4">
             <header class="flex items-center justify-between gap-3 border-b border-gray-200 pb-3">
                 <x-application-logo class="h-10 w-auto min-w-0 shrink sm:h-12" />
 
