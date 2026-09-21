@@ -4,7 +4,6 @@ namespace App\Filament\Resources\Users\Tables;
 
 use App\Models\User;
 use Filament\Actions\Action;
-use Filament\Actions\EditAction;
 use Filament\Support\Enums\Width;
 use Filament\Tables\Columns\IconColumn;
 use Filament\Tables\Columns\TextColumn;
@@ -114,8 +113,6 @@ class UsersTable
                     ->modalContent(fn (User $record) => view('filament.actions.password-reset-link', [
                         'url' => self::createPasswordResetUrl($record),
                     ])),
-
-                EditAction::make(),
             ])
             ->toolbarActions([]);
     }
