@@ -28,8 +28,9 @@ class WorkTimeRecordController extends Controller
         }
 
         $incidentRecord = null;
+        $scheduleWarning = null;
 
-        $response = DB::transaction(function () use ($user, &$incidentRecord): ?RedirectResponse {
+        $response = DB::transaction(function () use ($user, &$incidentRecord, &$scheduleWarning): ?RedirectResponse {
             User::query()
                 ->whereKey($user->id)
                 ->lockForUpdate()
@@ -63,10 +64,18 @@ class WorkTimeRecordController extends Controller
                 }
             }
 
-            $user->workTimeRecords()->create([
+            $startedAt = now();
+            $scheduleWarning = $user->scheduleIncidentNote($startedAt, 'entrada');
+            $record = $user->workTimeRecords()->create([
                 'record_type' => WorkTimeRecord::TYPE_WORK,
-                'started_at' => now(),
+                'started_at' => $startedAt,
+                'requires_review' => $scheduleWarning !== null,
+                'notes' => $scheduleWarning,
             ]);
+
+            if ($scheduleWarning !== null) {
+                $incidentRecord = $record->fresh();
+            }
 
             return null;
         });
@@ -79,7 +88,9 @@ class WorkTimeRecordController extends Controller
             $this->notifyAdminsAboutIncident($incidentRecord);
         }
 
-        return back()->with('success', 'Entrada registrada correctamente.');
+        return back()
+            ->with('success', 'Entrada registrada correctamente.')
+            ->when($scheduleWarning !== null, fn (RedirectResponse $response) => $response->with('warning', 'Has fichado fuera de tu horario previsto. Administración revisará la incidencia.'));
     }
 
     public function clockOut(Request $request): RedirectResponse
@@ -97,7 +108,10 @@ class WorkTimeRecordController extends Controller
             return back()->with('error', 'Los administradores no pueden fichar.');
         }
 
-        $response = DB::transaction(function () use ($user, $validated): ?RedirectResponse {
+        $incidentRecord = null;
+        $scheduleWarning = null;
+
+        $response = DB::transaction(function () use ($user, $validated, &$incidentRecord, &$scheduleWarning): ?RedirectResponse {
             User::query()
                 ->whereKey($user->id)
                 ->lockForUpdate()
@@ -112,6 +126,8 @@ class WorkTimeRecordController extends Controller
             $endedAt = now();
 
             $workedMinutes = (int) $record->started_at->diffInMinutes($endedAt);
+            $scheduleWarning = $user->scheduleIncidentNote($endedAt, 'salida');
+            $wasAlreadyUnderReview = $record->requires_review;
 
             $record->update([
                 'ended_at' => $endedAt,
@@ -119,7 +135,15 @@ class WorkTimeRecordController extends Controller
                 'worked_minutes' => $workedMinutes,
                 'justified_exit_minutes' => 0,
                 'unjustified_exit_minutes' => 0,
+                'requires_review' => $wasAlreadyUnderReview || $scheduleWarning !== null,
+                'notes' => $scheduleWarning === null
+                    ? $record->notes
+                    : trim(implode("\n", array_filter([$record->notes, $scheduleWarning]))),
             ]);
+
+            if ($scheduleWarning !== null && ! $wasAlreadyUnderReview) {
+                $incidentRecord = $record->fresh();
+            }
 
             if ($validated['end_type'] !== 'end_shift') {
                 $user->workTimeRecords()->create([
@@ -135,7 +159,13 @@ class WorkTimeRecordController extends Controller
             return $response;
         }
 
-        return back()->with('success', 'Salida registrada correctamente.');
+        if ($incidentRecord instanceof WorkTimeRecord) {
+            $this->notifyAdminsAboutIncident($incidentRecord);
+        }
+
+        return back()
+            ->with('success', 'Salida registrada correctamente.')
+            ->when($scheduleWarning !== null, fn (RedirectResponse $response) => $response->with('warning', 'Has fichado fuera de tu horario previsto. Administración revisará la incidencia.'));
     }
 
     public function finishExit(Request $request): RedirectResponse

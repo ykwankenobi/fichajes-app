@@ -74,6 +74,13 @@ class WorkTimeRecordForm
                             ->required()
                             ->disabled()
                             ->dehydrated(),
+
+                        Textarea::make('notes')
+                            ->label('Detalle de la incidencia')
+                            ->rows(2)
+                            ->disabled()
+                            ->dehydrated()
+                            ->columnSpanFull(),
                     ])
                     ->columns(2),
 

@@ -61,6 +61,12 @@
                     </div>
                 @endif
 
+                @if (session('warning'))
+                    <div class="text-amber-700 font-medium">
+                        {{ session('warning') }}
+                    </div>
+                @endif
+
                 @if (session('error'))
                     <div class="text-red-600">
                         {{ session('error') }}

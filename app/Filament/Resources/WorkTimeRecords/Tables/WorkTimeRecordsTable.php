@@ -45,6 +45,10 @@ class WorkTimeRecordsTable
                             return 'Cierre automático';
                         }
 
+                        if (str_contains((string) $record->notes, 'Fichaje fuera de horario previsto')) {
+                            return 'Fuera de horario';
+                        }
+
                         return match ($state) {
                             'work' => 'Trabajo',
                             'justified_exit' => 'Salida justificada',
@@ -54,6 +58,10 @@ class WorkTimeRecordsTable
                     })
                     ->color(function (?string $state, $record): string {
                         if ($record->closed_automatically) {
+                            return 'warning';
+                        }
+
+                        if (str_contains((string) $record->notes, 'Fichaje fuera de horario previsto')) {
                             return 'warning';
                         }
 

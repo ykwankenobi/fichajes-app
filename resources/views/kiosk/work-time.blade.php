@@ -87,6 +87,12 @@
                 </div>
             @endif
 
+            @if (session('warning'))
+                <div class="mt-4 rounded-lg border border-amber-200 bg-amber-50 px-4 py-3 text-sm font-medium text-amber-900">
+                    {{ session('warning') }}
+                </div>
+            @endif
+
             @if (session('error'))
                 <div class="mt-4 rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm font-medium text-red-900">
                     {{ session('error') }}

@@ -34,6 +34,7 @@ class WorkTimeIncidentCreatedNotification extends Notification
             $this->workTimeRecord->closed_automatically => 'Cierre automático de fichaje',
             $this->workTimeRecord->record_type === WorkTimeRecord::TYPE_UNJUSTIFIED_EXIT => 'Salida no justificada',
             $this->workTimeRecord->end_type === WorkTimeRecord::TYPE_UNJUSTIFIED_EXIT => 'Salida no justificada',
+            str_contains((string) $this->workTimeRecord->notes, 'Fichaje fuera de horario previsto') => 'Fichaje fuera de horario previsto',
             default => 'Incidencia de fichaje',
         };
 
@@ -49,6 +50,10 @@ class WorkTimeIncidentCreatedNotification extends Notification
             ->line("Minutos no justificados: {$unjustifiedMinutes}")
             ->action('Revisar incidencia', url('/admin/work-time-incidents/' . $this->workTimeRecord->id . '/edit'))
             ->line('Puedes revisarla desde el panel de administración.');
+
+        if ($this->workTimeRecord->notes) {
+            $message->line("Detalle: {$this->workTimeRecord->notes}");
+        }
 
         if ($replyTo = $company->mailReplyTo()) {
             $message->replyTo($replyTo, $company->mailFromName());

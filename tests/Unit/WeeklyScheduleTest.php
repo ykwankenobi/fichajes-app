@@ -36,4 +36,22 @@ class WeeklyScheduleTest extends TestCase
         $this->assertSame(360, $user->scheduledMinutesForDay(Carbon::parse('2026-09-21')));
         $this->assertSame(0, $user->scheduledMinutesForDay(Carbon::parse('2026-09-22')));
     }
+
+    public function test_it_detects_clockings_outside_a_configured_schedule(): void
+    {
+        $user = new User([
+            'weekly_schedule' => [
+                'monday' => [['desde' => '07:00', 'hasta' => '15:00']],
+            ],
+        ]);
+
+        $this->assertTrue($user->isWithinScheduledRange(Carbon::parse('2026-09-21 07:00')));
+        $this->assertTrue($user->isWithinScheduledRange(Carbon::parse('2026-09-21 15:00')));
+        $this->assertFalse($user->isWithinScheduledRange(Carbon::parse('2026-09-21 06:59')));
+        $this->assertFalse($user->isWithinScheduledRange(Carbon::parse('2026-09-22 09:00')));
+        $this->assertSame(
+            'Fichaje fuera de horario previsto: entrada a las 06:59.',
+            $user->scheduleIncidentNote(Carbon::parse('2026-09-21 06:59'), 'entrada')
+        );
+    }
 }

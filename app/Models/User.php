@@ -156,6 +156,35 @@ class User extends Authenticatable implements FilamentUser
 			});
 	}
 
+	public function isWithinScheduledRange(Carbon $date): bool
+	{
+		if (! $this->isScheduleConfigured()) {
+			return true;
+		}
+
+		$currentMinute = ((int) $date->format('H') * 60) + (int) $date->format('i');
+
+		foreach ($this->scheduledRangesForDay($date) as $range) {
+			$start = $this->minutesFromTime($range['desde'] ?? null);
+			$end = $this->minutesFromTime($range['hasta'] ?? null);
+
+			if ($start !== null && $end !== null && $currentMinute >= $start && $currentMinute <= $end) {
+				return true;
+			}
+		}
+
+		return false;
+	}
+
+	public function scheduleIncidentNote(Carbon $date, string $action): ?string
+	{
+		if ($this->isWithinScheduledRange($date)) {
+			return null;
+		}
+
+		return "Fichaje fuera de horario previsto: {$action} a las {$date->format('H:i')}.";
+	}
+
 	/** @return array<int, string> */
 	public function scheduledWorkingDays(): array
 	{
@@ -170,6 +199,15 @@ class User extends Authenticatable implements FilamentUser
 			->keys()
 			->values()
 			->all();
+	}
+
+	private function isScheduleConfigured(): bool
+	{
+		if (is_array($this->weekly_schedule)) {
+			return $this->scheduledWorkingDays() !== [];
+		}
+
+		return ! empty($this->horario_franjas);
 	}
 
 	private function minutesFromTime(?string $time): ?int
