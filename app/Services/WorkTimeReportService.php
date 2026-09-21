@@ -227,6 +227,29 @@ class WorkTimeReportService
 
     protected function expectedMinutes($user, Carbon $startDate, Carbon $endDate): int
     {
+        if (is_array($user->weekly_schedule)) {
+            $expectedMinutes = 0;
+
+            for ($date = $startDate->copy()->startOfDay(); $date->lte($endDate); $date->addDay()) {
+                $dailyMinutes = $user->scheduledMinutesForDay($date);
+
+                if ($dailyMinutes === 0 || Holiday::whereDate('date', $date)->exists()) {
+                    continue;
+                }
+                if (AbsenceRequest::where('user_id', $user->id)
+                    ->where('status', 'approved')
+                    ->whereDate('starts_at', '<=', $date)
+                    ->whereDate('ends_at', '>=', $date)
+                    ->exists()) {
+                    continue;
+                }
+
+                $expectedMinutes += $dailyMinutes;
+            }
+
+            return $expectedMinutes;
+        }
+
         $workingDays = collect($user->working_days ?: ['monday', 'tuesday', 'wednesday', 'thursday', 'friday']);
         $weeklyMinutes = (int) round(($user->horas_semanales ?? 0) * 60);
         $configuredDays = max(1, $workingDays->count());

@@ -33,6 +33,7 @@ class User extends Authenticatable implements FilamentUser
         'puesto',
         'horario',
         'horario_franjas',
+        'weekly_schedule',
         'working_days',
         'observaciones',
         'fecha_alta',
@@ -55,6 +56,7 @@ class User extends Authenticatable implements FilamentUser
             'fecha_alta' => 'date',
             'fecha_baja' => 'date',
             'horario_franjas' => 'array',
+            'weekly_schedule' => 'array',
             'working_days' => 'array',
         ];
     }
@@ -107,7 +109,8 @@ class User extends Authenticatable implements FilamentUser
 			return (int) $startDate->diffInDays($endDate) + 1;
 		}
 
-		$workingDays = $this->working_days
+		$workingDays = $this->scheduledWorkingDays()
+			?: $this->working_days
 			?: $settings->working_days
 			?: ['monday', 'tuesday', 'wednesday', 'thursday', 'friday'];
 		$days = 0;
@@ -119,6 +122,66 @@ class User extends Authenticatable implements FilamentUser
 		}
 
 		return $days;
+	}
+
+	/**
+	 * Returns the planned ranges for a date. Employees created before the weekly
+	 * schedule feature continue to use their previous common ranges.
+	 *
+	 * @return array<int, array{desde?: string, hasta?: string}>
+	 */
+	public function scheduledRangesForDay(Carbon $date): array
+	{
+		$day = strtolower($date->englishDayOfWeek);
+
+		if (is_array($this->weekly_schedule)) {
+			return array_values($this->weekly_schedule[$day] ?? []);
+		}
+
+		if (! in_array($day, $this->working_days ?: [], true)) {
+			return [];
+		}
+
+		return array_values($this->horario_franjas ?: []);
+	}
+
+	public function scheduledMinutesForDay(Carbon $date): int
+	{
+		return collect($this->scheduledRangesForDay($date))
+			->sum(function (array $range): int {
+				$start = $this->minutesFromTime($range['desde'] ?? null);
+				$end = $this->minutesFromTime($range['hasta'] ?? null);
+
+				return $start !== null && $end !== null && $end > $start ? $end - $start : 0;
+			});
+	}
+
+	/** @return array<int, string> */
+	public function scheduledWorkingDays(): array
+	{
+		if (! is_array($this->weekly_schedule)) {
+			return [];
+		}
+
+		return collect($this->weekly_schedule)
+			->filter(fn (array $ranges): bool => collect($ranges)->contains(
+				fn (array $range): bool => $this->minutesFromTime($range['hasta'] ?? null) > $this->minutesFromTime($range['desde'] ?? null)
+			))
+			->keys()
+			->values()
+			->all();
+	}
+
+	private function minutesFromTime(?string $time): ?int
+	{
+		if (! $time || ! preg_match('/^(?<hour>\d{1,2}):(?<minute>\d{2})/', $time, $matches)) {
+			return null;
+		}
+
+		$hour = (int) $matches['hour'];
+		$minute = (int) $matches['minute'];
+
+		return $hour < 24 && $minute < 60 ? ($hour * 60) + $minute : null;
 	}
 
 	public function vacationDaysAvailableForYear(int $year): int

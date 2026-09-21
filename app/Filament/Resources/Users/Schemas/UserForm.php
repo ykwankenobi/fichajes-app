@@ -9,7 +9,6 @@ use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\TimePicker;
 use Filament\Forms\Components\Repeater;
-use Filament\Forms\Components\CheckboxList;
 use Filament\Schemas\Components\Grid;
 use Filament\Schemas\Components\Section;
 use Filament\Schemas\Schema;
@@ -77,31 +76,24 @@ class UserForm
                 Section::make('Horario')
                     ->schema([
                         TextInput::make('horas_semanales')
-                            ->label('Horas semanales')
+                            ->label('Horas semanales (referencia)')
+                            ->helperText('Con horario semanal, las horas esperadas se calculan a partir de las franjas indicadas abajo.')
                             ->numeric()
                             ->minValue(0)
                             ->maxValue(80),
 
-                        CheckboxList::make('working_days')
-                            ->label('Días laborables')
-                            ->options([
-                                'monday' => 'Lunes', 'tuesday' => 'Martes', 'wednesday' => 'Miércoles',
-                                'thursday' => 'Jueves', 'friday' => 'Viernes', 'saturday' => 'Sábado', 'sunday' => 'Domingo',
-                            ])
-                            ->columns(4)
-                            ->default(['monday', 'tuesday', 'wednesday', 'thursday', 'friday'])
-                            ->required()
-                            ->columnSpanFull(),
-
-                        Repeater::make('horario_franjas')
-                            ->label('Franjas horarias')
+                        Section::make('Horario semanal')
+                            ->description('Añade las franjas de cada día. Un día sin franjas no se considera laborable.')
                             ->schema([
-                                TimePicker::make('desde')->label('Desde')->seconds(false)->required(),
-                                TimePicker::make('hasta')->label('Hasta')->seconds(false)->required(),
+                                self::scheduleRepeater('monday', 'Lunes'),
+                                self::scheduleRepeater('tuesday', 'Martes'),
+                                self::scheduleRepeater('wednesday', 'Miércoles'),
+                                self::scheduleRepeater('thursday', 'Jueves'),
+                                self::scheduleRepeater('friday', 'Viernes'),
+                                self::scheduleRepeater('saturday', 'Sábado'),
+                                self::scheduleRepeater('sunday', 'Domingo'),
                             ])
                             ->columns(2)
-                            ->addActionLabel('Añadir franja')
-                            ->defaultItems(1)
                             ->columnSpanFull(),
                     ])->columns(2),
 
@@ -124,5 +116,25 @@ class UserForm
                             ->dehydrated(fn ($record): bool => $record?->id !== Filament::auth()->id()),
                     ]),
             ]);
+    }
+
+    private static function scheduleRepeater(string $day, string $label): Repeater
+    {
+        return Repeater::make("weekly_schedule.{$day}")
+            ->label($label)
+            ->schema([
+                TimePicker::make('desde')
+                    ->label('Desde')
+                    ->seconds(false)
+                    ->required(),
+                TimePicker::make('hasta')
+                    ->label('Hasta')
+                    ->seconds(false)
+                    ->after('desde')
+                    ->required(),
+            ])
+            ->columns(2)
+            ->addActionLabel('Añadir franja')
+            ->defaultItems(0);
     }
 }
