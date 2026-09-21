@@ -26,15 +26,6 @@ class UsersTable
                     ->label('Email')
                     ->searchable(),
 
-                TextColumn::make('dni')
-                    ->label('DNI')
-                    ->searchable(),
-
-                TextColumn::make('email_verified_at')
-                    ->label('Email verificado')
-                    ->dateTime()
-                    ->sortable(),
-
                 IconColumn::make('activo')
                     ->label('Activo')
                     ->boolean(),
