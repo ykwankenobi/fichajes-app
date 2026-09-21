@@ -36,7 +36,7 @@ class AttendanceCalendar extends FullCalendarWidget
     protected function viewAction(): Action
     {
         return Action::make('view')
-            ->modalHeading(fn (array $arguments): string => 'Fichajes del '.$this->eventDate($arguments)->format('d/m/Y'))
+            ->modalHeading(fn (array $arguments): string => 'Registros del '.$this->eventDate($arguments)->format('d/m/Y'))
             ->modalContent(fn (array $arguments) => view('filament.widgets.daily-attendance-modal', [
                 'date' => $this->eventDate($arguments)->toDateString(),
             ]))
@@ -120,12 +120,12 @@ class AttendanceCalendar extends FullCalendarWidget
 
                 $events[] = EventData::make()
                     ->id('records-'.$date)
-                    ->title($count.' '.($count === 1 ? 'fichaje' : 'fichajes'))
+                    ->title($count.' '.($count === 1 ? 'registro' : 'registros'))
                     ->start($date)
                     ->allDay()
                     ->backgroundColor('#3b82f6')
                     ->borderColor('#3b82f6')
-                    ->extendedProps(['tipo' => 'Fichajes', 'cantidad' => $count]);
+                    ->extendedProps(['tipo' => 'Registros', 'cantidad' => $count]);
             });
 
         // Return plain arrays so Livewire serializes the event payload consistently.
