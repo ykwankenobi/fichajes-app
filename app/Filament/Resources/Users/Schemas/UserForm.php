@@ -12,6 +12,7 @@ use Filament\Forms\Components\Repeater;
 use Filament\Schemas\Components\Grid;
 use Filament\Schemas\Components\Section;
 use Filament\Schemas\Schema;
+use Filament\Support\Enums\Alignment;
 use Illuminate\Support\Facades\Hash;
 
 class UserForm
@@ -135,6 +136,7 @@ class UserForm
             ])
             ->columns(2)
             ->addActionLabel('Añadir franja')
+            ->addActionAlignment(Alignment::Start)
             ->defaultItems(0);
     }
 }
