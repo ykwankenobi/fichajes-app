@@ -155,8 +155,13 @@ class KioskWorkTimeController extends Controller
             $this->notifyAdminsAboutIncident($incidentRecord);
         }
 
-        return $this->kioskSuccess('Entrada registrada correctamente.')
-            ->when($scheduleWarning !== null, fn (RedirectResponse $response) => $response->with('warning', 'Has fichado fuera de tu horario previsto. Administración revisará la incidencia.'));
+        $redirect = $this->kioskSuccess('Entrada registrada correctamente.');
+
+        if ($scheduleWarning !== null) {
+            $redirect->with('warning', 'Has fichado fuera de tu horario previsto. Administración revisará la incidencia.');
+        }
+
+        return $redirect;
     }
 
     public function clockOut(Request $request, string $token): RedirectResponse
@@ -225,8 +230,13 @@ class KioskWorkTimeController extends Controller
             $this->notifyAdminsAboutIncident($incidentRecord);
         }
 
-        return $this->kioskSuccess('Salida registrada correctamente.')
-            ->when($scheduleWarning !== null, fn (RedirectResponse $response) => $response->with('warning', 'Has fichado fuera de tu horario previsto. Administración revisará la incidencia.'));
+        $redirect = $this->kioskSuccess('Salida registrada correctamente.');
+
+        if ($scheduleWarning !== null) {
+            $redirect->with('warning', 'Has fichado fuera de tu horario previsto. Administración revisará la incidencia.');
+        }
+
+        return $redirect;
     }
 
     public function finishExit(Request $request, string $token): RedirectResponse

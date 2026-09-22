@@ -88,9 +88,13 @@ class WorkTimeRecordController extends Controller
             $this->notifyAdminsAboutIncident($incidentRecord);
         }
 
-        return back()
-            ->with('success', 'Entrada registrada correctamente.')
-            ->when($scheduleWarning !== null, fn (RedirectResponse $response) => $response->with('warning', 'Has fichado fuera de tu horario previsto. Administración revisará la incidencia.'));
+        $redirect = back()->with('success', 'Entrada registrada correctamente.');
+
+        if ($scheduleWarning !== null) {
+            $redirect->with('warning', 'Has fichado fuera de tu horario previsto. Administración revisará la incidencia.');
+        }
+
+        return $redirect;
     }
 
     public function clockOut(Request $request): RedirectResponse
@@ -163,9 +167,13 @@ class WorkTimeRecordController extends Controller
             $this->notifyAdminsAboutIncident($incidentRecord);
         }
 
-        return back()
-            ->with('success', 'Salida registrada correctamente.')
-            ->when($scheduleWarning !== null, fn (RedirectResponse $response) => $response->with('warning', 'Has fichado fuera de tu horario previsto. Administración revisará la incidencia.'));
+        $redirect = back()->with('success', 'Salida registrada correctamente.');
+
+        if ($scheduleWarning !== null) {
+            $redirect->with('warning', 'Has fichado fuera de tu horario previsto. Administración revisará la incidencia.');
+        }
+
+        return $redirect;
     }
 
     public function finishExit(Request $request): RedirectResponse
