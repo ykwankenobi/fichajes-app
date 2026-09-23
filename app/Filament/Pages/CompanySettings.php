@@ -33,7 +33,10 @@ class CompanySettings extends Page implements HasForms
 
     public function mount(): void
     {
-        $this->form->fill(CompanySetting::current()->toArray());
+        $settings = CompanySetting::current()->toArray();
+        $settings['mail_password'] = null;
+
+        $this->form->fill($settings);
     }
 
     public function form(Schema $schema): Schema
@@ -134,8 +137,18 @@ class CompanySettings extends Page implements HasForms
                     ->columns(2),
 
                 Section::make('Correo electrónico')
-                    ->description('Configura la identidad visible de los correos. Las credenciales SMTP permanecen en la configuración técnica del servidor.')
+                    ->description('Configura el envío y la identidad visible de los correos. La contraseña SMTP se guarda cifrada y no vuelve a mostrarse.')
                     ->schema([
+                        Select::make('mail_mailer')
+                            ->label('Método de envío')
+                            ->options([
+                                'smtp' => 'SMTP',
+                                'log' => 'Solo registro (no envía correos)',
+                            ])
+                            ->default('log')
+                            ->required()
+                            ->live(),
+
                         TextInput::make('mail_from_name')
                             ->label('Nombre del remitente')
                             ->placeholder('Registro Horario {nombre comercial}')
@@ -152,6 +165,45 @@ class CompanySettings extends Page implements HasForms
                             ->email()
                             ->placeholder('Opcional')
                             ->maxLength(255),
+
+                        TextInput::make('mail_host')
+                            ->label('Servidor SMTP')
+                            ->placeholder('smtp.empresa.es')
+                            ->maxLength(255)
+                            ->required(fn (callable $get): bool => $get('mail_mailer') === 'smtp')
+                            ->visible(fn (callable $get): bool => $get('mail_mailer') === 'smtp'),
+
+                        TextInput::make('mail_port')
+                            ->label('Puerto SMTP')
+                            ->numeric()
+                            ->integer()
+                            ->minValue(1)
+                            ->maxValue(65535)
+                            ->default(587)
+                            ->required(fn (callable $get): bool => $get('mail_mailer') === 'smtp')
+                            ->visible(fn (callable $get): bool => $get('mail_mailer') === 'smtp'),
+
+                        Select::make('mail_encryption')
+                            ->label('Cifrado SMTP')
+                            ->options([
+                                'tls' => 'TLS / STARTTLS',
+                                'ssl' => 'SSL / TLS',
+                            ])
+                            ->placeholder('Sin cifrado')
+                            ->visible(fn (callable $get): bool => $get('mail_mailer') === 'smtp'),
+
+                        TextInput::make('mail_username')
+                            ->label('Usuario SMTP')
+                            ->maxLength(255)
+                            ->visible(fn (callable $get): bool => $get('mail_mailer') === 'smtp'),
+
+                        TextInput::make('mail_password')
+                            ->label('Contraseña SMTP')
+                            ->password()
+                            ->revealable()
+                            ->helperText('Déjala vacía para conservar la contraseña guardada.')
+                            ->dehydrated(fn (?string $state): bool => filled($state))
+                            ->visible(fn (callable $get): bool => $get('mail_mailer') === 'smtp'),
 
                         TextInput::make('password_reset_subject')
                             ->label('Asunto: restablecer contraseña')

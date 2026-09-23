@@ -20,6 +20,12 @@ class CompanySetting extends Model
         'mail_from_name',
         'mail_from_address',
         'mail_reply_to',
+        'mail_mailer',
+        'mail_host',
+        'mail_port',
+        'mail_username',
+        'mail_password',
+        'mail_encryption',
         'password_reset_subject',
         'absence_request_subject',
         'absence_approved_subject',
@@ -34,6 +40,8 @@ class CompanySetting extends Model
     protected $casts = [
         'working_days' => 'array',
         'annual_vacation_days' => 'integer',
+        'mail_port' => 'integer',
+        'mail_password' => 'encrypted',
     ];
 
     public static function current(): self
@@ -69,6 +77,36 @@ class CompanySetting extends Model
     public function mailReplyTo(): ?string
     {
         return $this->mail_reply_to ?: null;
+    }
+
+    public function applyMailConfiguration(): void
+    {
+        $mailer = $this->mail_mailer ?: config('mail.default');
+
+        config([
+            'mail.default' => $mailer,
+            'mail.from.address' => $this->mailFromAddress(),
+            'mail.from.name' => $this->mailFromName(),
+        ]);
+
+        if ($mailer !== 'smtp') {
+            return;
+        }
+
+        foreach ([
+            'host' => $this->mail_host,
+            'port' => $this->mail_port,
+            'username' => $this->mail_username,
+            'password' => $this->mail_password,
+        ] as $key => $value) {
+            if ($value !== null && $value !== '') {
+                config(["mail.mailers.smtp.{$key}" => $value]);
+            }
+        }
+
+        if ($this->mail_encryption !== null) {
+            config(['mail.mailers.smtp.scheme' => $this->mail_encryption]);
+        }
     }
 
     public function fullAddress(): ?string
