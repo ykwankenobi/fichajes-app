@@ -23,12 +23,20 @@ Route::prefix(config('kiosk.path'))->group(function (): void {
             'display' => 'standalone',
             'background_color' => '#f9fafb',
             'theme_color' => '#dc2626',
-            'icons' => [[
-                'src' => asset('images/kiosk-icon.svg'),
-                'sizes' => 'any',
-                'type' => 'image/svg+xml',
-                'purpose' => 'any maskable',
-            ]],
+            'icons' => [
+                [
+                    'src' => asset('images/kiosk-icon-192.png'),
+                    'sizes' => '192x192',
+                    'type' => 'image/png',
+                    'purpose' => 'any maskable',
+                ],
+                [
+                    'src' => asset('images/kiosk-icon-512.png'),
+                    'sizes' => '512x512',
+                    'type' => 'image/png',
+                    'purpose' => 'any maskable',
+                ],
+            ],
         ], 200, ['Content-Type' => 'application/manifest+json']);
     })->name('kiosk.manifest');
 
