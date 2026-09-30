@@ -14,6 +14,11 @@ Route::prefix(config('kiosk.path'))->group(function (): void {
     Route::get('/', [KioskWorkTimeController::class, 'index'])
         ->name('kiosk.index');
 
+    Route::get('/session', function () {
+        return response()->json(['token' => csrf_token()])
+            ->header('Cache-Control', 'no-store, private');
+    })->name('kiosk.session');
+
     Route::get('/manifest.webmanifest', function () {
         return response()->json([
             'name' => 'Fichajes - '.config('app.name'),

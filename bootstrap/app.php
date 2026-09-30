@@ -12,5 +12,11 @@ return Application::configure(basePath: dirname(__DIR__))
     )
     ->withMiddleware(function (Middleware $middleware): void {})
     ->withExceptions(function (Exceptions $exceptions): void {
-        //
+        $exceptions->respond(function ($response, $exception, $request) {
+            if ($response->getStatusCode() === 419 && $request->routeIs('kiosk.*')) {
+                return redirect()->route('kiosk.index', ['session_expired' => 1]);
+            }
+
+            return $response;
+        });
     })->create();

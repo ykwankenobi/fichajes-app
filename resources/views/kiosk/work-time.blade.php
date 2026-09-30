@@ -87,6 +87,14 @@
                 </div>
             </header>
 
+            @if (request()->boolean('session_expired'))
+                <p role="alert" class="mb-4 rounded-lg bg-amber-50 p-4 text-amber-800">
+                    La sesión ha caducado. Introduce el PIN de nuevo. El intento anterior no se ha enviado.
+                </p>
+            @endif
+            <p id="session-error" role="alert" class="hidden mb-4 rounded-lg bg-amber-50 p-4 text-amber-800">
+                No se ha podido conectar. Comprueba la conexión y vuelve a intentarlo. El fichaje no se ha enviado.
+            </p>
             @if (session('success'))
                 <div class="mt-4 rounded-lg border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm font-medium text-emerald-900">
                     {{ session('success') }}
@@ -293,6 +301,56 @@
         </main>
         <script>
             (() => {
+                let renewal;
+                let submitting = false;
+                const renewSession = () => {
+                    if (renewal) return renewal;
+                    renewal = (async () => {
+                        const controller = new AbortController();
+                        const timeout = setTimeout(() => controller.abort(), 10000);
+                        try {
+                            const response = await fetch(@json(route('kiosk.session')), {
+                                credentials: 'same-origin',
+                                cache: 'no-store',
+                                headers: { Accept: 'application/json' },
+                                signal: controller.signal,
+                            });
+                            if (!response.ok) throw new Error('Session renewal failed');
+                            const data = await response.json();
+                            if (typeof data.token !== 'string' || !data.token) throw new Error('Missing token');
+                            document.querySelectorAll('input[name="_token"]').forEach(input => input.value = data.token);
+                            document.querySelector('meta[name="csrf-token"]').content = data.token;
+                            document.getElementById('session-error').classList.add('hidden');
+                        } finally {
+                            clearTimeout(timeout);
+                        }
+                    })().finally(() => { renewal = null; });
+                    return renewal;
+                };
+                const refreshWhenVisible = () => {
+                    if (!document.hidden) renewSession().catch(() => {});
+                };
+                window.setInterval(refreshWhenVisible, 60000);
+                window.addEventListener('pageshow', refreshWhenVisible);
+                window.addEventListener('focus', refreshWhenVisible);
+                document.addEventListener('visibilitychange', refreshWhenVisible);
+                document.querySelectorAll('form[method="POST"], form[method="post"]').forEach(form => {
+                    form.addEventListener('submit', async event => {
+                        event.preventDefault();
+                        if (submitting) return;
+                        submitting = true;
+                        const buttons = [...document.querySelectorAll('button[type="submit"]')];
+                        buttons.forEach(button => button.disabled = true);
+                        try {
+                            await renewSession();
+                            HTMLFormElement.prototype.submit.call(form);
+                        } catch {
+                            document.getElementById('session-error').classList.remove('hidden');
+                            submitting = false;
+                            buttons.forEach(button => button.disabled = false);
+                        }
+                    });
+                });
                 let installPrompt;
                 const installButton = document.getElementById('install-kiosk-app');
 
